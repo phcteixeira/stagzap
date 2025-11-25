@@ -24,7 +24,12 @@ export function ContactsPage() {
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const pageSize = 30;
+  const [pageSize, setPageSize] = useState(30);
+
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPageSize(Number(e.target.value));
+    setCurrentPage(1);
+  };
 
   const { contacts, total, totalPages, loading, error, refresh, deleteContact } = useContacts({
     search: search || undefined,
@@ -280,8 +285,21 @@ export function ContactsPage() {
           </div>
         )}
 
-        <div className="text-center text-sm text-gray-500">
-          Mostrando {contacts.length} de {total} contatos
+        <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+          <span>Mostrando {contacts.length} de {total} contatos</span>
+          <div className="flex items-center gap-2">
+            <label htmlFor="pageSize" className="text-gray-600">Itens por página:</label>
+            <select
+              id="pageSize"
+              value={pageSize}
+              onChange={handlePageSizeChange}
+              className="border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 p-1"
+            >
+              <option value={30}>30</option>
+              <option value={100}>100</option>
+              <option value={500}>500</option>
+            </select>
+          </div>
         </div>
       </div>
 
