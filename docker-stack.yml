@@ -1,18 +1,16 @@
 version: '3.8'
 
 services:
-  postgres_disparador:
+  postgres:
     image: postgres:16-alpine
     environment:
       - POSTGRES_DB=contacts
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=Exclusivo2025
+      - POSTGRES_PASSWORD=postgres
     volumes:
-      - postgres_disparador_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - stagnet
-    ports:
-      - 1919:5433
+      - network_public
     deploy:
       placement:
         constraints:
@@ -20,13 +18,13 @@ services:
       restart_policy:
         condition: on-failure
 
-  redis_disparador:
+  redis:
     image: redis:7-alpine
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
-      - redis_disparador_data:/data
+      - redis_data:/data
     networks:
-      - stagnet
+      - network_public
     deploy:
       placement:
         constraints:
@@ -35,10 +33,10 @@ services:
         condition: on-failure
 
   backend:
-    image: astraonline/astracampaignbackend:0.0.3
+    image: work-backend:v0.0.2-20251020c
     environment:
-      DATABASE_URL: postgresql://postgres:Exclusivo2025@postgres_disparador:5432/contacts?schema=public
-      REDIS_URL: redis://redis_disparador:6379
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/contacts?schema=public
+      REDIS_URL: redis://redis:6379
       REDIS_PREFIX: work_app
       PORT: 3001
       NODE_ENV: production
@@ -50,18 +48,18 @@ services:
       DEFAULT_EVOLUTION_API_KEY: ""
       DEFAULT_COMPANY_NAME: ""
       DEFAULT_PAGE_TITLE: "Sistema de Gestão de Contatos"
-      ALLOWED_ORIGINS: https://stag-dev.caradotrafego.com.br,http://stag-dev.caradotrafego.com.br,http://work_frontend,http://work_frontend:80
+      ALLOWED_ORIGINS: https://work.trecofantastico.com.br,http://work.trecofantastico.com.br,http://work_frontend,http://work_frontend:80
     networks:
-      - stagnet
+      - network_public
     depends_on:
-      - postgres_disparador
-      - redis_disparador
+      - postgres
+      - redis
     volumes:
       - contacts_data:/app/data
       - uploads_data:/app/uploads
       - backup_data:/app/backups
     ports:
-      - 3005:3006
+      - 3002:3001
     deploy:
       replicas: 1
       placement:
@@ -71,17 +69,17 @@ services:
         condition: on-failure
       labels:
         - traefik.enable=true
-        - traefik.docker.network=stagnet
-        - traefik.http.routers.work-backend.rule=Host(`stag-dev.caradotrafego.com.br`) && PathPrefix(`/api`)
+        - traefik.docker.network=network_public
+        - traefik.http.routers.work-backend.rule=Host(`work.trecofantastico.com.br`) && PathPrefix(`/api`)
         - traefik.http.routers.work-backend.entrypoints=web,websecure
         - traefik.http.routers.work-backend.tls=true
         - traefik.http.routers.work-backend.tls.certresolver=letsencryptresolver
         - traefik.http.services.work-backend.loadbalancer.server.port=3001
 
   frontend:
-    image: astraonline/astracampaignfrontend:0.0.4
+    image: work-frontend:v0.0.2-20251020a
     networks:
-      - stagnet
+      - network_public
     depends_on:
       - backend
     deploy:
@@ -93,20 +91,20 @@ services:
         condition: on-failure
       labels:
         - traefik.enable=true
-        - traefik.docker.network=stagnet
-        - traefik.http.routers.work-frontend.rule=Host(`stag-dev.caradotrafego.com.br`)
+        - traefik.docker.network=network_public
+        - traefik.http.routers.work-frontend.rule=Host(`work.trecofantastico.com.br`)
         - traefik.http.routers.work-frontend.entrypoints=web,websecure
         - traefik.http.routers.work-frontend.tls=true
         - traefik.http.routers.work-frontend.tls.certresolver=letsencryptresolver
         - traefik.http.services.work-frontend.loadbalancer.server.port=80
 
 networks:
-  stagnet:
+  network_public:
     external: true
 
 volumes:
-  postgres_disparador_data:
-  redis_disparador_data:
+  postgres_data:
+  redis_data:
   contacts_data:
   uploads_data:
   backup_data:
