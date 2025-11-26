@@ -12,7 +12,7 @@ services:
     networks:
       - stagnet
     ports:
-      - 1914:5432
+      - 1919:5433
     deploy:
       placement:
         constraints:
