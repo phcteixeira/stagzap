@@ -34,7 +34,7 @@ services:
 
   backend:
     image: phcteixeira/stagzap-backend:fork
-        build: ./backend
+    build: ./backend
     environment:
       DATABASE_URL: postgresql://postgres:Exclusivo2025@postgres:5432/contacts?schema=public
       REDIS_URL: redis://redis:6379
@@ -79,7 +79,7 @@ services:
 
   frontend:
     image: phcteixeira/stagzap-frontend:fork
-        build: ./frontend
+    build: ./frontend
     networks:
       - stagnet
     depends_on:
