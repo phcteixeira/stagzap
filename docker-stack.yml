@@ -59,7 +59,7 @@ services:
       - uploads_data:/app/uploads
       - backup_data:/app/backups
     ports:
-      - 3002:3001
+      - 3006:3005
     deploy:
       replicas: 1
       placement:
